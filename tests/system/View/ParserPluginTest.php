@@ -47,4 +47,12 @@ class ParserPluginTest extends \CIUnitTestCase
 
 		$this->assertEquals(safe_mailto('foo@example.com', 'Silly'), $this->parser->renderString($template));
 	}
+
+	public function testLang()
+	{
+		$template = '{+ lang Number.terabyteAbbr +}';
+
+		$this->assertEquals('TB', $this->parser->renderString($template));
+	}
+
 }

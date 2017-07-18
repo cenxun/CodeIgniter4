@@ -7,7 +7,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2014 - 2017, British Columbia Institute of Technology
+ * Copyright (c) 2014-2017 British Columbia Institute of Technology
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,30 +29,14 @@
  *
  * @package	CodeIgniter
  * @author	CodeIgniter Dev Team
- * @copyright	Copyright (c) 2014 - 2017, British Columbia Institute of Technology (http://bcit.ca/)
+ * @copyright	2014-2017 British Columbia Institute of Technology (https://bcit.ca/)
  * @license	https://opensource.org/licenses/MIT	MIT License
  * @link	https://codeigniter.com
  * @since	Version 3.0.0
  * @filesource
  */
-
 class JSONFormatter implements FormatterInterface
 {
-	/**
-	 * The error strings to use if encoding hits an error.
-	 *
-	 * @var array
-	 */
-	protected $errors = [
-		JSON_ERROR_NONE           => 'No error has occurred',
-		JSON_ERROR_DEPTH          => 'The maximum stack depth has been exceeded',
-		JSON_ERROR_STATE_MISMATCH => 'Invalid or malformed JSON',
-		JSON_ERROR_CTRL_CHAR      => 'Control character error, possibly incorrectly encoded',
-		JSON_ERROR_SYNTAX         => 'Syntax error',
-		JSON_ERROR_UTF8           => 'Malformed UTF-8 characters, possibly incorrectly encoded',
-	];
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Takes the given data and formats it.
@@ -63,20 +47,18 @@ class JSONFormatter implements FormatterInterface
 	 */
 	public function format(array $data)
 	{
-		$options = ENVIRONMENT == 'production'
-			? JSON_NUMERIC_CHECK
-			: JSON_NUMERIC_CHECK | JSON_PRETTY_PRINT;
+		$options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 
-		$result = json_encode($data, 512, $options);
+		$options = ENVIRONMENT === 'production' ? $options : $options | JSON_PRETTY_PRINT;
 
-		// If result is NULL, then an error happened.
-		// Let them know.
-		if ($result === null)
+		$result = json_encode($data, $options, 512);
+
+		if (json_last_error() !== JSON_ERROR_NONE)
 		{
-			throw new \RuntimeException($this->errors[json_last_error()]);
+			throw new \RuntimeException(sprintf("Failed to parse json string, error: '%s'", json_last_error_msg()));
 		}
 
-		return utf8_encode($result);
+		return $result;
 	}
 
 	//--------------------------------------------------------------------
